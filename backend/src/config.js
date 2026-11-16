@@ -4,6 +4,9 @@ const path = require('path');
 module.exports = {
   port: Number(process.env.PORT) || 3000,
 
+  // Origins allowed to call the API from a browser: "*" or a comma-separated list.
+  corsOrigin: process.env.CORS_ORIGIN || '*',
+
   // Which data source to use: "json" (default) or "mysql".
   dataSource: (process.env.DATA_SOURCE || 'json').toLowerCase(),
 

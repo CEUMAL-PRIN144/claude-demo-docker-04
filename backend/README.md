@@ -22,7 +22,9 @@ docker build -t todo-backend .
 docker run -d --name todo-api -p 3000:3000 -v todo-data:/app/data todo-backend
 ```
 
-The `todo-data` volume keeps `todos.json` across container restarts. The image
+The `todo-data` volume keeps `todos.json` across container restarts.
+Add `-e CORS_ORIGIN=http://localhost:8080` to accept browser requests only from
+the frontend container (see [CORS](#cors)). The image
 runs as the non-root `node` user and has a health check on `/api/health`.
 
 To use MySQL from the container, pass the settings as environment variables.
@@ -74,6 +76,20 @@ All storage goes through a **repository** with a fixed set of methods:
 
 Routes only talk to this interface, so to add another backend (Postgres, MongoDB…)
 you write one class with these methods and register it in `index.js`.
+
+## CORS
+
+`CORS_ORIGIN` controls which web pages may call the API from a browser:
+
+- `*` (default): any origin.
+- A comma-separated list, e.g. `http://localhost:5173,http://localhost:8080`.
+  Requests from a listed origin get `Access-Control-Allow-Origin` set to that
+  origin. Other origins get no CORS headers, so the browser blocks them.
+  Preflight (`OPTIONS`) requests are answered for `GET`, `POST`, `PUT`, `PATCH`
+  and `DELETE`.
+
+CORS is enforced by browsers only. `curl` and other server-side clients aren't
+affected.
 
 ## Endpoints
 

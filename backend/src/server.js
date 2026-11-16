@@ -4,7 +4,7 @@ const { createRepository } = require('./repositories');
 
 async function main() {
   const repo = await createRepository(config.dataSource);
-  const app = createApp(repo, { dataSource: config.dataSource });
+  const app = createApp(repo, { dataSource: config.dataSource, corsOrigin: config.corsOrigin });
 
   const server = app.listen(config.port, () => {
     console.log(`ToDo API listening on http://localhost:${config.port} (data source: ${config.dataSource})`);

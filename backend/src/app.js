@@ -1,22 +1,16 @@
 const express = require('express');
 const todosRouter = require('./routes/todos');
+const { cors, parseOrigins } = require('./middleware/cors');
 
 /**
  * Builds the Express app around a repository. Keeping this separate from
  * server.js lets tests inject any repository without opening a port.
  */
-function createApp(repo, { dataSource = 'unknown' } = {}) {
+function createApp(repo, { dataSource = 'unknown', corsOrigin = process.env.CORS_ORIGIN } = {}) {
   const app = express();
+  // CORS goes first so every response, errors included, carries the headers.
+  app.use(cors(parseOrigins(corsOrigin)));
   app.use(express.json());
-
-  // Basic CORS so a frontend on another port can call the API.
-  app.use((req, res, next) => {
-    res.set('Access-Control-Allow-Origin', process.env.CORS_ORIGIN || '*');
-    res.set('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE,OPTIONS');
-    res.set('Access-Control-Allow-Headers', 'Content-Type');
-    if (req.method === 'OPTIONS') return res.sendStatus(204);
-    next();
-  });
 
   app.get('/api/health', (req, res) => res.json({ status: 'ok', dataSource }));
   app.use('/api/todos', todosRouter(repo));

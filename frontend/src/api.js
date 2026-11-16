@@ -1,5 +1,9 @@
 // Thin client for the Express ToDo API.
-const BASE = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
+// API base URL, in order of priority:
+//   1. window.__APP_CONFIG__.API_URL (public/config.js, set at container start)
+//   2. VITE_API_URL (set at build time)
+//   3. '' = same origin, e.g. through the Vite dev proxy
+const BASE = (window.__APP_CONFIG__?.API_URL || import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 async function request(path, { method = 'GET', body } = {}) {
   let res;
@@ -10,7 +14,11 @@ async function request(path, { method = 'GET', body } = {}) {
       body: body ? JSON.stringify(body) : undefined,
     });
   } catch {
-    throw new Error('Cannot reach the server. Is the backend running?');
+    // Browsers report CORS rejections exactly like network failures.
+    throw new Error(
+      `Cannot reach the API at ${BASE || window.location.origin}. ` +
+        'Check that the backend is running and allows this origin (CORS_ORIGIN).'
+    );
   }
 
   if (res.status === 204) return null;
