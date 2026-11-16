@@ -14,6 +14,30 @@ npm run dev        # or: npm start
 
 The API runs on `http://localhost:3000`. Todos are saved to `data/todos.json`.
 
+## Running with Docker
+
+```bash
+cd backend
+docker build -t todo-backend .
+docker run -d --name todo-api -p 3000:3000 -v todo-data:/app/data todo-backend
+```
+
+The `todo-data` volume keeps `todos.json` across container restarts. The image
+runs as the non-root `node` user and has a health check on `/api/health`.
+
+To use MySQL from the container, pass the settings as environment variables.
+`MYSQL_HOST` must be reachable from inside the container. `localhost` there is
+the container itself, so use the database's hostname instead. For a MySQL
+server on your own machine (Docker Desktop), that's `host.docker.internal`:
+
+```bash
+docker run -d -p 3000:3000 \
+  -e DATA_SOURCE=mysql \
+  -e MYSQL_HOST=host.docker.internal \
+  -e MYSQL_USER=root -e MYSQL_PASSWORD=secret -e MYSQL_DATABASE=todo_app \
+  todo-backend
+```
+
 ## Switching to MySQL
 
 1. Set the following in `.env`:
