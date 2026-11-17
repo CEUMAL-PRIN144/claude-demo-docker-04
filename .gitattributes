@@ -1,0 +1,7 @@
+# Files that run or are read inside Linux containers must keep LF line endings,
+# even when checked out on Windows with core.autocrlf=true. A CRLF shebang
+# ("#!/bin/sh\r") makes the script fail with "not found".
+*.sh            text eol=lf
+Dockerfile      text eol=lf
+*.conf          text eol=lf
+.dockerignore   text eol=lf

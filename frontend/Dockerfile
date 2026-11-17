@@ -20,9 +20,12 @@ COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY --chmod=755 docker/40-write-config.sh /docker-entrypoint.d/40-write-config.sh
 
-# The startup script rewrites config.js, so the nginx user must own it.
 USER root
-RUN chown nginx /usr/share/nginx/html/config.js
+# Strip Windows line endings (CRLF) in case the repo was checked out on Windows;
+# a "#!/bin/sh\r" shebang fails with "not found".
+# The startup script also rewrites config.js, so the nginx user must own it.
+RUN sed -i 's/\r$//' /docker-entrypoint.d/40-write-config.sh /etc/nginx/conf.d/default.conf \
+ && chown nginx /usr/share/nginx/html/config.js
 USER nginx
 
 EXPOSE 8080
