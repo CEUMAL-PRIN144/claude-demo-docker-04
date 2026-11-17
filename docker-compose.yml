@@ -1,0 +1,39 @@
+# Runs the ToDo app: React frontend (nginx) + Express backend.
+#
+#   docker compose up --build
+#
+# Then open http://localhost:8080 (frontend). The API is on http://localhost:3000.
+#
+# The browser calls the backend directly on its own port, so requests are
+# cross-origin and the backend's CORS_ORIGIN must allow the frontend's origin.
+# Both are derived from the ports below. To change them, set FRONTEND_PORT /
+# BACKEND_PORT in your shell or in a .env file next to this file.
+
+services:
+  backend:
+    build: ./backend
+    image: todo-backend
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    environment:
+      DATA_SOURCE: json
+      CORS_ORIGIN: http://localhost:${FRONTEND_PORT:-8080}
+    volumes:
+      - todo-data:/app/data
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    image: todo-frontend
+    ports:
+      - "${FRONTEND_PORT:-8080}:8080"
+    environment:
+      # Address the *browser* uses to reach the API (not a Docker-internal name).
+      API_URL: http://localhost:${BACKEND_PORT:-3000}
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  todo-data:
